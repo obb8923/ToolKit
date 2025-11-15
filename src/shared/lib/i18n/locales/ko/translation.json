@@ -1,2 +1,24 @@
-{}
-
+{
+  "sensors": {
+    "barometer": {
+      "title": "기압계",
+      "unit": "hPa"
+    },
+    "level": {
+      "title": "수평계",
+      "pitch": "피치",
+      "roll": "롤"
+    },
+    "lightMeter": {
+      "title": "조도계",
+      "unit": "lux"
+    },
+    "compass": {
+      "title": "나침반"
+    },
+    "soundMeter": {
+      "title": "소음측정기",
+      "unit": "dB"
+    }
+  }
+}

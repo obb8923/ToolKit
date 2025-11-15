@@ -1,2 +1,24 @@
-{}
-
+{
+  "sensors": {
+    "barometer": {
+      "title": "Barometer",
+      "unit": "hPa"
+    },
+    "level": {
+      "title": "Level",
+      "pitch": "Pitch",
+      "roll": "Roll"
+    },
+    "lightMeter": {
+      "title": "Light Meter",
+      "unit": "lux"
+    },
+    "compass": {
+      "title": "Compass"
+    },
+    "soundMeter": {
+      "title": "Sound Meter",
+      "unit": "dB"
+    }
+  }
+}
