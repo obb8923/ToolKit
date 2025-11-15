@@ -43,11 +43,11 @@ export const AppScreen = () => {
   return (
     <Background>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
-        <Barometer />
-        <Level />
-        <LightMeter />
+        {/* <Barometer /ㅌ> */}
+        {/* <Level /> */}
+        {/* <LightMeter /> */}
         <Compass />
-        <SoundMeter />
+        {/* <SoundMeter /> */}
       </ScrollView>
     </Background>
   );

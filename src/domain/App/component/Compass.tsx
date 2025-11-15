@@ -1,19 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Animated, StyleSheet, Dimensions } from 'react-native';
+import { View } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Svg, { Line } from 'react-native-svg';
 import { Text } from '@component/Text';
 import { CompassSensor, CompassData } from '@lib/sensors/SensorModule';
 import { useTranslation } from 'react-i18next';
-
-const { width } = Dimensions.get('window');
-const COMPASS_SIZE = Math.min(width - 64, 280);
+import { DEVICE_WIDTH } from '@constant/NORMAL';
+import { COLOR } from '@constant/COLOR';
+const COMPASS_SIZE = DEVICE_WIDTH * 0.4;
 const CENTER = COMPASS_SIZE / 2;
 const RADIUS = COMPASS_SIZE / 2 - 20;
-
-const getDirection = (azimuth: number): string => {
-  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  const index = Math.round(azimuth / 45) % 8;
-  return directions[index];
-};
+const TICK_RADIUS = COMPASS_SIZE / 2 - 5; // 각도 표시선 반지름 (더 바깥쪽)
+const LABEL_RADIUS = RADIUS - 10; // 방향 라벨을 바깥쪽에 배치
 
 const getPositionForDirection = (angle: number, radius: number) => {
   const rad = (angle * Math.PI) / 180;
@@ -23,12 +21,23 @@ const getPositionForDirection = (angle: number, radius: number) => {
   };
 };
 
+const getTickPosition = (angle: number, length: number) => {
+  const rad = (angle * Math.PI) / 180;
+  const startX = CENTER + TICK_RADIUS * Math.sin(rad);
+  const startY = CENTER - TICK_RADIUS * Math.cos(rad);
+  const endX = CENTER + (TICK_RADIUS - length) * Math.sin(rad);
+  const endY = CENTER - (TICK_RADIUS - length) * Math.cos(rad);
+  return { startX, startY, endX, endY };
+};
+
 export const Compass = () => {
   const { t } = useTranslation();
   const [azimuth, setAzimuth] = useState<number | null>(null);
-  const sensorRef = React.useRef<CompassSensor | null>(null);
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const currentRotation = useRef<number>(0);
+  const sensorRef = useRef<CompassSensor | null>(null);
+
+  // 방향 표시 회전 스타일 (실제 지리적 방향을 가리키도록 반대 방향으로 회전)
+  const labelRotateAnim = useSharedValue(0);
+  const currentLabelRotation = useRef<number>(0);
 
   useEffect(() => {
     sensorRef.current = new CompassSensor();
@@ -36,10 +45,10 @@ export const Compass = () => {
     const listener = (data: CompassData) => {
       setAzimuth(data.azimuth);
       
+      // 방향 표시 회전 애니메이션 (실제 지리적 방향을 가리키도록 반대 방향)
       // 최단 경로로 회전하도록 각도 계산
-      // 기기가 회전하는 방향과 반대로 바늘이 회전해야 함
       const targetRotation = data.azimuth;
-      let diff = targetRotation - currentRotation.current;
+      let diff = targetRotation - currentLabelRotation.current;
       
       // 360도 정규화 - 최단 경로 선택
       if (diff > 180) {
@@ -48,15 +57,12 @@ export const Compass = () => {
         diff += 360;
       }
       
-      const finalRotation = currentRotation.current + diff;
-      currentRotation.current = finalRotation;
+      const finalRotation = currentLabelRotation.current + diff;
+      currentLabelRotation.current = finalRotation;
       
-      // 바늘 회전 애니메이션
-      Animated.timing(rotateAnim, {
-        toValue: finalRotation,
+      labelRotateAnim.value = withTiming(finalRotation, {
         duration: 100,
-        useNativeDriver: true,
-      }).start();
+      });
     };
 
     sensorRef.current.addListener(listener);
@@ -74,147 +80,111 @@ export const Compass = () => {
     { label: 'W', angle: 270 },
   ];
 
-  const rotateStyle = {
-    transform: [{
-      rotate: rotateAnim.interpolate({
-        inputRange: [-720, 720],
-        outputRange: ['-720deg', '720deg'],
-        extrapolate: 'clamp',
-      })
-    }],
-  };
+  // 각도 표시선 생성 (5도 간격)
+  const tickMarks = [];
+  for (let angle = 0; angle < 360; angle += 5) {
+    const isCardinal = angle === 0 || angle === 90 || angle === 180 || angle === 270;
+    tickMarks.push({
+      angle,
+      isCardinal,
+      width: isCardinal ? 2 : 1,
+      length: isCardinal ? 12 : 8,
+    });
+  }
+
+  // 방향 표시 회전 스타일 (실제 지리적 방향을 가리키도록 반대 방향으로 회전)
+  const labelRotateStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{
+        rotate: `${-labelRotateAnim.value}deg`,
+      }],
+    };
+  });
 
   return (
-    <View className="p-4 bg-white rounded-lg mb-4 items-center">
-      <Text text={t('sensors.compass.title')} type="title4" className="mb-4" />
-      
-      <View style={styles.compassContainer}>
+      <View 
+        className="justify-center items-center p-8 bg-black"
+        style={{ width: COMPASS_SIZE + 16, height: COMPASS_SIZE + 16 ,borderRadius: (COMPASS_SIZE + 16) / 2}}
+      >
         {/* 원형 배경 */}
-        <View style={styles.compassCircle}>
-          {/* 방향 라벨 */}
-          {directions.map((dir) => {
-            const pos = getPositionForDirection(dir.angle, RADIUS);
-            return (
-              <View
-                key={dir.label}
-                style={[
-                  styles.directionLabel,
-                  { left: pos.x, top: pos.y },
-                  dir.label === 'N' && styles.northLabel,
-                ]}
-              >
-                <Text
-                  text={dir.label}
-                  type={dir.label === 'N' ? 'title3' : 'body1'}
-                  className={dir.label === 'N' ? 'text-red-600 font-bold' : 'text-gray-700'}
-                />
-              </View>
-            );
-          })}
+        <View 
+          className="justify-center items-center relative bg-neutral-800"
+          style={{ 
+            width: COMPASS_SIZE, 
+            height: COMPASS_SIZE, 
+            borderRadius: COMPASS_SIZE / 2 
+          }}
+        >
+          {/* 각도 표시선과 방향 라벨 컨테이너 (실제 지리적 방향을 가리키도록 회전) */}
+          <Animated.View 
+            className="absolute justify-center items-center"
+            style={[
+              { 
+                width: COMPASS_SIZE, 
+                height: COMPASS_SIZE 
+              },
+              labelRotateStyle
+            ]}
+          >
+            {/* 각도 표시선 SVG */}
+            <Svg 
+              width={COMPASS_SIZE} 
+              height={COMPASS_SIZE}
+              style={{ position: 'absolute' }}
+            >
+              {/* 각도 표시선 */}
+              {tickMarks.map((tick, index) => {
+                const pos = getTickPosition(tick.angle, tick.length);
+                return (
+                  <Line
+                    key={index}
+                    x1={pos.startX}
+                    y1={pos.startY}
+                    x2={pos.endX}
+                    y2={pos.endY}
+                    stroke={COLOR['white']}
+                    strokeWidth={tick.width}
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+            </Svg>
 
-          {/* 중앙 바늘 */}
-          <Animated.View style={[styles.needleContainer, rotateStyle]}>
-            {/* 북쪽 바늘 (빨간색) */}
-            <View style={styles.needleNorth} />
-            {/* 남쪽 바늘 (회색) */}
-            <View style={styles.needleSouth} />
-            {/* 중앙 점 */}
-            <View style={styles.centerDot} />
+            {/* 방향 라벨 */}
+            <View className="absolute top-0 left-0 right-0 bottom-0 p-8">
+              {directions.map((dir) => {
+                const pos = getPositionForDirection(dir.angle, LABEL_RADIUS);
+                // 각 방향 라벨의 회전 각도
+                const labelRotation = 
+                  dir.label === 'W' ? 270 :
+                  dir.label === 'E' ? 90 :
+                  dir.label === 'S' ? 180 : 0;
+                
+                return (
+                  <View
+                    key={dir.label}
+                    className="absolute justify-center items-center"
+                    style={[
+                      { 
+                        left: pos.x, 
+                        top: pos.y,
+                        width: dir.label === 'N' ? 24 : 20,
+                        height: dir.label === 'N' ? 24 : 20,
+                        transform: [{ rotate: `${labelRotation}deg` }],
+                      }
+                    ]}
+                  >
+                    <Text
+                      text={dir.label}
+                      type={dir.label === 'N' ? 'title3' : 'body1'}
+                      className={dir.label === 'N' ? 'text-red-600 font-bold' : 'text-white'}
+                    />
+                  </View>
+                );
+              })}
+            </View>
           </Animated.View>
         </View>
       </View>
-
-      {/* 각도 표시 */}
-      {azimuth !== null && (
-        <View className="mt-4 flex-row items-baseline">
-          <Text 
-            text={azimuth.toFixed(1)} 
-            type="number" 
-            className="text-primary mr-2" 
-          />
-          <Text text="°" type="body2" className="text-gray-600 mr-4" />
-          <Text 
-            text={getDirection(azimuth)} 
-            type="title3" 
-            className="text-primary font-bold" 
-          />
-        </View>
-      )}
-    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  compassContainer: {
-    width: COMPASS_SIZE,
-    height: COMPASS_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  compassCircle: {
-    width: COMPASS_SIZE,
-    height: COMPASS_SIZE,
-    borderRadius: COMPASS_SIZE / 2,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 2,
-    borderColor: '#e9ecef',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  directionLabel: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  northLabel: {
-    width: 24,
-    height: 24,
-  },
-  needleContainer: {
-    position: 'absolute',
-    width: COMPASS_SIZE,
-    height: COMPASS_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  needleNorth: {
-    position: 'absolute',
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 0,
-    borderBottomWidth: RADIUS - 15,
-    borderBottomColor: '#dc2626',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    top: 15,
-    left: CENTER - 6,
-  },
-  needleSouth: {
-    position: 'absolute',
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: RADIUS - 15,
-    borderBottomWidth: 0,
-    borderTopColor: '#6b7280',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    bottom: 15,
-    left: CENTER - 6,
-  },
-  centerDot: {
-    position: 'absolute',
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#1f2937',
-    zIndex: 10,
-  },
-});
-
