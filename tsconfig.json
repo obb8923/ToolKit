@@ -1,5 +1,29 @@
 {
   "extends": "@react-native/typescript-config",
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/Pods"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@assets/*": ["assets/*"],
+      "@domain/*": ["src/domain/*"],
+      "@shared/*": ["src/shared/*"],
+      "@component/*": ["src/shared/component/*"],
+      "@constant/*": ["src/shared/constant/*"],
+      "@lib/*": ["src/shared/lib/*"],
+      "@nav/*": ["src/shared/nav/*"],
+      "@store/*": ["src/shared/store/*"],
+      "@type/*": ["src/shared/type/*"],
+      "@service/*": ["src/shared/service/*"],
+    }
+  }
 }
