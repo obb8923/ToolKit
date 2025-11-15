@@ -5,7 +5,7 @@ import * as RNLocalize from 'react-native-localize';
 
 import { languageResources } from './resources';
 
-const LANGUAGE_STORAGE_KEY = '@focusoven/i18n-language';
+const LANGUAGE_STORAGE_KEY = '@toolKit/i18n-language';
 
 export const supportedLanguages = ['en', 'ko'] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
