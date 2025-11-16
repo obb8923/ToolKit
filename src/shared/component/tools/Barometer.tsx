@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '@component/Text';
 import { BarometerSensor, BarometerData } from '@lib/sensors/SensorModule';
-import { useTranslation } from 'react-i18next';
-
+import { COLOR } from '@constant/COLOR';
+import { DEVICE_WIDTH,DEVICE_HEIGHT } from '@constant/NORMAL';
 export const Barometer = () => {
-  const { t } = useTranslation();
   const [pressure, setPressure] = useState<number | null>(null);
   const sensorRef = React.useRef<BarometerSensor | null>(null);
 
@@ -25,15 +24,16 @@ export const Barometer = () => {
   }, []);
 
   return (
-    <View className="p-4 bg-white rounded-lg mb-4">
-      <Text text={t('sensors.barometer.title')} type="title4" className="mb-2" />
+    <View className="w-full bg-black rounded-lg mb-4"
+    style={{height:DEVICE_HEIGHT /5,borderRadius:DEVICE_HEIGHT /4}}>
       <View className="flex-row items-baseline">
         <Text 
           text={pressure !== null ? pressure.toFixed(2) : '--'} 
           type="number" 
-          className="text-primary mr-2" 
+          className="text-primary mr-2"
+         numberOfLines={1}
         />
-        <Text text={t('sensors.barometer.unit')} type="body2" className="text-gray-600" />
+        <Text text="hPa" type="body2" className="text-gray-600" />
       </View>
     </View>
   );
