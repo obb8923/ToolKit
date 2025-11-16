@@ -5,14 +5,14 @@ import { SoundMeterSensor, SoundMeterData } from '@lib/sensors/SensorModule';
 import { useTranslation } from 'react-i18next';
 import { DEVICE_HEIGHT } from '@constant/NORMAL';
 import { COLOR } from '@constant/COLOR';
-import { BlurView } from '@component/BlurView';
+import { BlurView } from '@component/index';
 
 const WAVE_HEIGHT = DEVICE_HEIGHT * 0.1;
 const WAVE_POINTS = 150; // 막대 개수
 const MAX_DB = 120; // 최대 decibel 값
 const MIN_DB = 0; // 최소 decibel 값
 const BAR_SPACING = 2; // 막대 사이 간격
-const CirclePadding = 8;
+const CIRCLE_PADDING = 8;
 const LEFT_OFFSET = WAVE_HEIGHT; // 왼쪽으로 이동할 오프셋
 const VERTICAL_PADDING = WAVE_HEIGHT / 8;
 
@@ -176,13 +176,13 @@ export const SoundMeter = () => {
         <BlurView
           style={{
             position: 'absolute',
-            left: CirclePadding,
-            top: CirclePadding,
-            width: WAVE_HEIGHT - CirclePadding * 2,
-            height: WAVE_HEIGHT - CirclePadding * 2,
+            left: CIRCLE_PADDING,
+            top: CIRCLE_PADDING,
+            width: WAVE_HEIGHT - CIRCLE_PADDING * 2,
+            height: WAVE_HEIGHT - CIRCLE_PADDING * 2,
             overflow: 'hidden',            
           }}
-          borderRadius={(WAVE_HEIGHT - CirclePadding * 2) / 2}
+          borderRadius={(WAVE_HEIGHT - CIRCLE_PADDING * 2) / 2}
           blurType="dark"
           blurAmount={8}
         />
@@ -191,15 +191,15 @@ export const SoundMeter = () => {
         <BlurView
           style={{
             position: 'absolute',
-            right: CirclePadding,
-            top: CirclePadding,
-            width: WAVE_HEIGHT - CirclePadding * 2,
-            height: WAVE_HEIGHT - CirclePadding * 2,
+            right: CIRCLE_PADDING,
+            top: CIRCLE_PADDING,
+            width: WAVE_HEIGHT - CIRCLE_PADDING * 2,
+            height: WAVE_HEIGHT - CIRCLE_PADDING * 2,
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          borderRadius={(WAVE_HEIGHT - CirclePadding * 2) / 2}
+          borderRadius={(WAVE_HEIGHT - CIRCLE_PADDING * 2) / 2}
           blurType="dark"
           blurAmount={8}
         >
