@@ -1,10 +1,10 @@
-import { Barometer } from './Barometer';
-import { Level } from './Level';
-import { LightMeter } from './LightMeter';
-import { Compass } from './Compass';
-import { SoundMeter } from './SoundMeter';
-import { Proximity } from './Proximity';
-import { Gravity } from './Gravity';
+import { Barometer } from './tools/Barometer';
+import { Level } from './tools/Level';
+import { LightMeter } from './tools/LightMeter';
+import { Compass } from './tools/Compass';
+import { SoundMeter } from './tools/SoundMeter';
+import { Proximity } from './tools/Proximity';
+import { Gravity } from './tools/Gravity';
 import { BlurView } from './BlurView';
 import { Button } from './Button';
 import {Background} from './Background';
