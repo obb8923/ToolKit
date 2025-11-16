@@ -6,6 +6,8 @@ const LevelModule = NativeModules.LevelModule;
 const LightMeterModule = NativeModules.LightMeterModule;
 const CompassModule = NativeModules.CompassModule;
 const SoundMeterModule = NativeModules.SoundMeterModule;
+const ProximityModule = NativeModules.ProximityModule;
+const GravityModule = NativeModules.GravityModule;
 
 // Debug: Log all available native modules and sensor modules
 if (__DEV__) {
@@ -16,6 +18,8 @@ if (__DEV__) {
     LightMeterModule: !!LightMeterModule,
     CompassModule: !!CompassModule,
     SoundMeterModule: !!SoundMeterModule,
+    ProximityModule: !!ProximityModule,
+    GravityModule: !!GravityModule,
   });
 }
 
@@ -49,12 +53,27 @@ export interface SoundMeterData {
   amplitude: number;
 }
 
+// Proximity types
+export interface ProximityData {
+  distance: number; // cm (binary sensor: 0 or maxRange, e.g., 5cm)
+}
+
+// Gravity types
+export interface GravityData {
+  x: number; // m/s²
+  y: number; // m/s²
+  z: number; // m/s²
+  magnitude: number; // m/s² (sqrt(x² + y² + z²))
+}
+
 // Event listener types
 export type BarometerListener = (data: BarometerData) => void;
 export type LevelListener = (data: LevelData) => void;
 export type LightMeterListener = (data: LightMeterData) => void;
 export type CompassListener = (data: CompassData) => void;
 export type SoundMeterListener = (data: SoundMeterData) => void;
+export type ProximityListener = (data: ProximityData) => void;
+export type GravityListener = (data: GravityData) => void;
 
 // Sensor module classes
 class SensorModuleBase {
@@ -164,6 +183,26 @@ export class SoundMeterSensor extends SensorModuleBase {
       console.error('Error checking permission:', error);
       return false;
     }
+  }
+}
+
+export class ProximitySensor extends SensorModuleBase {
+  constructor() {
+    super(ProximityModule, 'ProximityData');
+  }
+
+  addListener(listener: ProximityListener) {
+    super.addListener(listener, 'ProximityData');
+  }
+}
+
+export class GravitySensor extends SensorModuleBase {
+  constructor() {
+    super(GravityModule, 'GravityData');
+  }
+
+  addListener(listener: GravityListener) {
+    super.addListener(listener, 'GravityData');
   }
 }
 

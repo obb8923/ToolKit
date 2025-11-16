@@ -12,7 +12,9 @@ class SensorPackage : ReactPackage {
             LevelModule(reactContext),
             LightMeterModule(reactContext),
             CompassModule(reactContext),
-            SoundMeterModule(reactContext)
+            SoundMeterModule(reactContext),
+            ProximityModule(reactContext),
+            GravityModule(reactContext)
         )
     }
     

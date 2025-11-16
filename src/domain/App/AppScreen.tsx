@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ScrollView, PermissionsAndroid, Platform } from 'react-native';
-import { Barometer, Level, LightMeter, Compass, SoundMeter, Background } from '@component/index';
+import { Barometer, Level, LightMeter, Compass, SoundMeter, Proximity, Gravity, Background } from '@component/index';
 
 export const AppScreen = () => {
   useEffect(() => {
@@ -38,11 +38,13 @@ export const AppScreen = () => {
   return (
     <Background>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
-        {/* <Barometer /> */}
+        <Barometer />
+        <Proximity />
+        <Gravity />
         {/* <Level /> */}
-        <LightMeter />
-        <Compass />
-        <SoundMeter />
+        {/* <LightMeter />
+        <Compass /> */}
+        {/* <SoundMeter /> */}
       </ScrollView>
     </Background>
   );
